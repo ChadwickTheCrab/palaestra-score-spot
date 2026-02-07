@@ -211,6 +211,17 @@ export default function Home() {
             >
               Hard Reset
             </button>
+            {process.env.COMMIT_HASH && (
+              <a
+                href={`${process.env.GITHUB_REPO}/commit/${process.env.COMMIT_HASH}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-on-surface-variant/50 hover:text-accent transition-colors"
+                title="View latest commit on GitHub"
+              >
+                {process.env.COMMIT_HASH}
+              </a>
+            )}
           </div>
         </div>
       </footer>
