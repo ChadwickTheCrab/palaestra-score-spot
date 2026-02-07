@@ -31,6 +31,7 @@ interface EventScoringProps {
   onEventComplete: (event: EventType) => void;
   onViewResults: () => void;
   onReorderEvents?: (newOrder: EventType[]) => void;
+  onReorderGymnasts?: (event: EventType, newOrder: string[]) => void;
 }
 
 // Sortable Event Item Component
@@ -115,6 +116,78 @@ function SortableEventItem({ event, index, meet, onSelect }: SortableEventItemPr
   );
 }
 
+// Sortable Gymnast Item Component
+interface SortableGymnastItemProps {
+  gymnast: Gymnast;
+  index: number;
+  scoreValue: string;
+  onScoreChange: (gymnastId: string, value: string) => void;
+}
+
+function SortableGymnastItem({ gymnast, index, scoreValue, onScoreChange }: SortableGymnastItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: gymnast.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="card elevation-1 p-4 flex items-center gap-4"
+    >
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="flex-shrink-0 text-on-surface-variant/50 hover:text-on-surface-variant cursor-grab active:cursor-grabbing p-1 touch-none"
+        onClick={(e) => e.stopPropagation()}
+        aria-label={`Drag to reorder ${gymnast.name}`}
+      >
+        <GripVertical className="w-5 h-5" />
+      </button>
+
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center
+                      text-sm font-bold text-on-surface-variant">
+        {index + 1}
+      </div>
+
+      <div className="flex-1">
+        <p className="font-medium text-on-surface">{gymnast.name}</p>
+      </div>
+
+      <div className="flex-shrink-0">
+        <div className="relative">
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={scoreValue}
+            onChange={(e) => onScoreChange(gymnast.id, e.target.value)}
+            placeholder="000"
+            className="w-24 py-2.5 px-3 bg-surface-variant border-2 border-outline rounded-lg
+                       text-center font-mono text-lg font-semibold text-on-surface
+                       focus:border-accent focus:outline-none transition-colors
+                       placeholder:text-on-surface-variant/30"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
+            /10
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EventScoring({
   meet,
   eventOrder,
@@ -123,9 +196,11 @@ export function EventScoring({
   onEventComplete,
   onViewResults,
   onReorderEvents,
+  onReorderGymnasts,
 }: EventScoringProps) {
   const [activeEvent, setActiveEvent] = useState<EventType | null>(meet.activeEvent);
   const [items, setItems] = useState<EventType[]>(eventOrder);
+  const [gymnastItems, setGymnastItems] = useState<string[]>([]);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const inputTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
@@ -144,6 +219,18 @@ export function EventScoring({
   useEffect(() => {
     setActiveEvent(meet.activeEvent);
   }, [meet.activeEvent]);
+
+  // Sync gymnast items when active event changes
+  useEffect(() => {
+    if (activeEvent) {
+      const order = meet.eventScores[activeEvent].gymnastOrder;
+      // Ensure all current gymnasts are in the order (in case group was edited)
+      const currentIds = meet.gymnasts.map(g => g.id);
+      const filteredOrder = order.filter(id => currentIds.includes(id));
+      const newIds = currentIds.filter(id => !order.includes(id));
+      setGymnastItems([...filteredOrder, ...newIds]);
+    }
+  }, [activeEvent, meet.gymnasts, meet.eventScores]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -183,6 +270,23 @@ export function EventScoring({
     if (meet.eventScores[event].completed) return;
     setActiveEvent(event);
     onSelectEvent(event);
+  };
+
+  const handleGymnastDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && activeEvent) {
+      setGymnastItems((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+        
+        // Call parent callback with new order
+        onReorderGymnasts?.(activeEvent, newOrder);
+        
+        return newOrder;
+      });
+    }
   };
 
   // Auto-format score input: 956 → 9.56, 95 → 9.50, 875 → 8.75
@@ -382,40 +486,41 @@ export function EventScoring({
 
           {/* Gymnast Score Inputs */}
           <div className="space-y-3">
-            {meet.gymnasts.map((gymnast, index) => (
-              <div
-                key={gymnast.id}
-                className="card elevation-1 p-4 flex items-center gap-4"
+            <div className="flex items-center justify-between px-1">
+              <h4 className="text-sm font-medium text-on-surface">Gymnasts</h4>
+              {onReorderGymnasts && (
+                <span className="text-xs text-on-surface-variant/70">
+                  Drag to reorder
+                </span>
+              )}
+            </div>
+
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleGymnastDragEnd}
+            >
+              <SortableContext
+                items={gymnastItems}
+                strategy={verticalListSortingStrategy}
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center
-                                text-sm font-bold text-on-surface-variant">
-                  {index + 1}
+                <div className="space-y-3">
+                  {gymnastItems.map((gymnastId, index) => {
+                    const gymnast = meet.gymnasts.find(g => g.id === gymnastId);
+                    if (!gymnast) return null;
+                    return (
+                      <SortableGymnastItem
+                        key={gymnast.id}
+                        gymnast={gymnast}
+                        index={index}
+                        scoreValue={getScoreValue(gymnast.id)}
+                        onScoreChange={handleScoreChange}
+                      />
+                    );
+                  })}
                 </div>
-                
-                <div className="flex-1">
-                  <p className="font-medium text-on-surface">{gymnast.name}</p>
-                </div>
-                
-                <div className="flex-shrink-0">
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      value={getScoreValue(gymnast.id)}
-                      onChange={(e) => handleScoreChange(gymnast.id, e.target.value)}
-                      placeholder="000"
-                      className="w-24 py-2.5 px-3 bg-surface-variant border-2 border-outline rounded-lg
-                                 text-center font-mono text-lg font-semibold text-on-surface
-                                 focus:border-accent focus:outline-none transition-colors
-                                 placeholder:text-on-surface-variant/30"
-                    />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
-                      /10
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Quick Entry Hint */}

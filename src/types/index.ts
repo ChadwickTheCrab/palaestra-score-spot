@@ -24,6 +24,7 @@ export interface EventScores {
   event: EventType;
   scores: MeetScore[];
   completed: boolean;
+  gymnastOrder: string[]; // Custom gymnast order for this event
 }
 
 export interface CurrentMeet {

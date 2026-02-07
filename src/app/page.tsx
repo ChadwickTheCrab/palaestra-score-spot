@@ -28,6 +28,7 @@ export default function Home() {
     setActiveEvent,
     updateEventScore,
     markEventComplete,
+    reorderGymnasts,
     completeMeet,
     cancelCurrentMeet,
     currentResults,
@@ -155,6 +156,7 @@ export default function Home() {
             onReorderEvents={(newOrder) => {
               updateGroup(selectedGroup.id, { eventOrder: newOrder });
             }}
+            onReorderGymnasts={reorderGymnasts}
           />
         )}
 

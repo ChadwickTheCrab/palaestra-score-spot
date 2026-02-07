@@ -131,7 +131,12 @@ export function useAppData() {
       gymnasts: [...group.gymnasts],
       eventScores: EVENTS.reduce((acc, event) => ({
         ...acc,
-        [event]: { event, scores: [], completed: false }
+        [event]: { 
+          event, 
+          scores: [], 
+          completed: false,
+          gymnastOrder: group.gymnasts.map(g => g.id) // Default to group order
+        }
       }), {} as Record<EventType, any>),
       activeEvent: null,
     };
@@ -202,6 +207,26 @@ export function useAppData() {
             },
           },
           activeEvent: null,
+        },
+      };
+    });
+  }, []);
+
+  const reorderGymnasts = useCallback((event: EventType, newOrder: string[]) => {
+    setData(prev => {
+      if (!prev.currentMeet) return prev;
+
+      return {
+        ...prev,
+        currentMeet: {
+          ...prev.currentMeet,
+          eventScores: {
+            ...prev.currentMeet.eventScores,
+            [event]: {
+              ...prev.currentMeet.eventScores[event],
+              gymnastOrder: newOrder,
+            },
+          },
         },
       };
     });
@@ -297,6 +322,7 @@ export function useAppData() {
     setActiveEvent,
     updateEventScore,
     markEventComplete,
+    reorderGymnasts,
     completeMeet,
     cancelCurrentMeet,
     currentResults,
