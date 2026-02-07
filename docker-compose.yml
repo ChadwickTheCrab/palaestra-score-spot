@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  palaestra-score-spot:
+    build: .
+    container_name: palaestra-score-spot
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Optional: persist localStorage data if you mount a volume
+    # volumes:
+    #   - ./data:/app/data

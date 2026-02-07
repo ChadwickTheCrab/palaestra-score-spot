@@ -1,0 +1,308 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Material 3 Color System - Palaestra Lioness Theme */
+:root {
+  /* Primary - Gold/Amber */
+  --md-sys-color-primary: #c9a227;
+  --md-sys-color-on-primary: #000000;
+  --md-sys-color-primary-container: #f9e5a3;
+  --md-sys-color-on-primary-container: #3d2e00;
+  
+  /* Secondary - Warm Gray */
+  --md-sys-color-secondary: #6b5e4a;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #f4e6d4;
+  --md-sys-color-on-secondary-container: #251a0b;
+  
+  /* Tertiary - Deep Gold/Bronze */
+  --md-sys-color-tertiary: #8b7355;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #fce5c9;
+  --md-sys-color-on-tertiary-container: #2b1e0d;
+  
+  /* Error */
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  
+  /* Surface - Black & White Base */
+  --md-sys-color-surface: #0a0a0a;
+  --md-sys-color-on-surface: #ffffff;
+  --md-sys-color-surface-variant: #1c1c1c;
+  --md-sys-color-on-surface-variant: #e0e0e0;
+  --md-sys-color-surface-dim: #121212;
+  --md-sys-color-surface-bright: #2c2c2c;
+  --md-sys-color-surface-container-lowest: #050505;
+  --md-sys-color-surface-container-low: #0f0f0f;
+  --md-sys-color-surface-container: #1a1a1a;
+  --md-sys-color-surface-container-high: #252525;
+  --md-sys-color-surface-container-highest: #303030;
+  
+  /* Outline */
+  --md-sys-color-outline: #5c5c5c;
+  --md-sys-color-outline-variant: #3d3d3d;
+  
+  /* Inverse */
+  --md-sys-color-inverse-surface: #f5f5f5;
+  --md-sys-color-inverse-on-surface: #1a1a1a;
+  --md-sys-color-inverse-primary: #e8c94a;
+  
+  /* Shadow/Scrim */
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  
+  /* Surface tints */
+  --md-sys-color-surface-tint: #c9a227;
+  
+  /* Lioness Accent Colors */
+  --lioness-gold: #c9a227;
+  --lioness-gold-light: #f4d03f;
+  --lioness-gold-dark: #8b6914;
+  --lioness-sequin: #ffd700;
+  --lioness-black: #0a0a0a;
+  --lioness-white: #ffffff;
+  --lioness-gray: #2c2c2c;
+  
+  /* Elevation */
+  --md-sys-elevation-level0: 0px 0px 0px 0px rgba(0,0,0,0);
+  --md-sys-elevation-level1: 0px 1px 3px 1px rgba(0,0,0,0.15), 0px 1px 2px 0px rgba(0,0,0,0.3);
+  --md-sys-elevation-level2: 0px 2px 6px 2px rgba(0,0,0,0.15), 0px 1px 2px 0px rgba(0,0,0,0.3);
+  --md-sys-elevation-level3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px 0px rgba(0,0,0,0.3);
+  --md-sys-elevation-level4: 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px 0px rgba(0,0,0,0.3);
+  --md-sys-elevation-level5: 0px 8px 12px 6px rgba(0,0,0,0.15), 0px 4px 4px 0px rgba(0,0,0,0.3);
+}
+
+@layer base {
+  * {
+    @apply border-outline-variant;
+  }
+  
+  body {
+    @apply bg-surface text-on-surface antialiased;
+    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-primary);
+  }
+}
+
+@layer components {
+  /* Material 3 Button Styles */
+  .btn-filled {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-200;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--md-sys-elevation-level0);
+  }
+  
+  .btn-filled:hover {
+    box-shadow: var(--md-sys-elevation-level1);
+    filter: brightness(1.1);
+  }
+  
+  .btn-filled:active {
+    box-shadow: var(--md-sys-elevation-level0);
+  }
+  
+  .btn-outlined {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-200 border-2;
+    border-color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface);
+  }
+  
+  .btn-outlined:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+  }
+  
+  .btn-tonal {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-200;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+  
+  .btn-tonal:hover {
+    box-shadow: var(--md-sys-elevation-level1);
+    filter: brightness(1.05);
+  }
+  
+  .btn-elevated {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-200;
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-primary);
+    box-shadow: var(--md-sys-elevation-level1);
+  }
+  
+  .btn-elevated:hover {
+    box-shadow: var(--md-sys-elevation-level2);
+  }
+  
+  .btn-text {
+    @apply px-4 py-2 rounded-full font-medium transition-all duration-200;
+    color: var(--md-sys-color-primary);
+  }
+  
+  .btn-text:hover {
+    background-color: rgba(201, 162, 39, 0.08);
+  }
+  
+  /* Material 3 Card Styles */
+  .card {
+    @apply rounded-xl overflow-hidden transition-all duration-200;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    box-shadow: var(--md-sys-elevation-level1);
+  }
+  
+  .card:hover {
+    box-shadow: var(--md-sys-elevation-level2);
+  }
+  
+  .card-elevated {
+    background-color: var(--md-sys-color-surface-container-low);
+    box-shadow: var(--md-sys-elevation-level2);
+  }
+  
+  .card-filled {
+    background-color: var(--md-sys-color-surface-container-highest);
+  }
+  
+  .card-outlined {
+    background-color: transparent;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: none;
+  }
+  
+  /* Material 3 Input Styles */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg outline-none transition-all duration-200;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid transparent;
+  }
+  
+  .input-field:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+  }
+  
+  .input-field:focus {
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-color: var(--md-sys-color-primary);
+  }
+  
+  /* Event Button Styles */
+  .event-btn {
+    @apply relative flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300;
+    background: linear-gradient(135deg, var(--md-sys-color-surface-container) 0%, var(--md-sys-color-surface-container-high) 100%);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    min-height: 100px;
+  }
+  
+  .event-btn:hover {
+    border-color: var(--lioness-gold);
+    box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .event-btn.active {
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.2) 0%, rgba(201, 162, 39, 0.1) 100%);
+    border-color: var(--lioness-gold);
+    box-shadow: 0 0 25px rgba(201, 162, 39, 0.4);
+  }
+  
+  /* Score Input */
+  .score-input {
+    @apply w-24 text-center text-2xl font-bold py-2 px-3 rounded-xl outline-none transition-all;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+  }
+  
+  .score-input:focus {
+    border-color: var(--lioness-gold);
+    box-shadow: 0 0 15px rgba(201, 162, 39, 0.3);
+  }
+  
+  /* Animations */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(201, 162, 39, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .gold-glow {
+    box-shadow: 0 0 30px rgba(201, 162, 39, 0.4), 0 0 60px rgba(201, 162, 39, 0.2);
+  }
+  
+  .rank-1 {
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.3) 0%, rgba(201, 162, 39, 0.1) 100%);
+    border-color: var(--lioness-gold);
+  }
+  
+  .rank-2 {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.2) 0%, rgba(192, 192, 192, 0.05) 100%);
+    border-color: #a0a0a0;
+  }
+  
+  .rank-3 {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.2) 0%, rgba(205, 127, 50, 0.05) 100%);
+    border-color: #b87333;
+  }
+}
+
+@layer utilities {
+  .text-gold {
+    color: var(--lioness-gold);
+  }
+  
+  .text-gold-light {
+    color: var(--lioness-gold-light);
+  }
+  
+  .bg-gold {
+    background-color: var(--lioness-gold);
+  }
+  
+  .border-gold {
+    border-color: var(--lioness-gold);
+  }
+  
+  .gradient-gold {
+    background: linear-gradient(135deg, var(--lioness-gold) 0%, var(--lioness-sequin) 50%, var(--lioness-gold-light) 100%);
+  }
+  
+  .gradient-dark {
+    background: linear-gradient(180deg, var(--lioness-black) 0%, #1a1a1a 100%);
+  }
+  
+  .gold-text-shadow {
+    text-shadow: 0 2px 10px rgba(201, 162, 39, 0.5);
+  }
+}
