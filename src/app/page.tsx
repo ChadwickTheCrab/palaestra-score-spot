@@ -143,13 +143,17 @@ export default function Home() {
         )}
 
         {/* SCORING VIEW */}
-        {currentView === 'scoring' && currentMeet && (
+        {currentView === 'scoring' && currentMeet && selectedGroup && (
           <EventScoring
             meet={currentMeet}
+            eventOrder={selectedGroup.eventOrder}
             onSelectEvent={setActiveEvent}
             onUpdateScore={updateEventScore}
             onEventComplete={handleEventComplete}
             onViewResults={() => setCurrentView('results')}
+            onReorderEvents={(newOrder) => {
+              updateGroup(selectedGroup.id, { eventOrder: newOrder });
+            }}
           />
         )}
 

@@ -11,6 +11,7 @@ export interface Group {
   name: string;
   skillLevel: SkillLevel;
   gymnasts: Gymnast[];
+  eventOrder: EventType[]; // Custom event order, defaults to ['bars', 'beam', 'floor', 'vault']
   createdAt: number;
 }
 

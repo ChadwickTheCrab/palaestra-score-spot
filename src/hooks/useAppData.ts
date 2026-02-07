@@ -61,6 +61,7 @@ export function useAppData() {
           id: `gym-${Date.now()}-${index}`,
           name: name.trim(),
         })),
+      eventOrder: ['bars', 'beam', 'floor', 'vault'], // Default order
       createdAt: Date.now(),
     };
 

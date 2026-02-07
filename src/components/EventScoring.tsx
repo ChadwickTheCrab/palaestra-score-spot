@@ -7,18 +7,22 @@ import { BarsPictogram, BeamPictogram, FloorPictogram, VaultPictogram } from './
 
 interface EventScoringProps {
   meet: CurrentMeet;
+  eventOrder: EventType[];
   onSelectEvent: (event: EventType | null) => void;
   onUpdateScore: (event: EventType, gymnastId: string, score: number | null) => void;
   onEventComplete: (event: EventType) => void;
   onViewResults: () => void;
+  onReorderEvents?: (newOrder: EventType[]) => void;
 }
 
 export function EventScoring({
   meet,
+  eventOrder,
   onSelectEvent,
   onUpdateScore,
   onEventComplete,
   onViewResults,
+  onReorderEvents,
 }: EventScoringProps) {
   const [activeEvent, setActiveEvent] = useState<EventType | null>(meet.activeEvent);
 
@@ -101,8 +105,8 @@ export function EventScoring({
             Select Event to Score
           </h3>
           
-          <div className="grid grid-cols-2 gap-3">
-            {EVENTS.map((event) => {
+          <div className="space-y-2">
+            {eventOrder.map((event, index) => {
               const config = EVENT_CONFIG[event];
               const isCompleted = meet.eventScores[event].completed;
               const scoreCount = meet.eventScores[event].scores.length;
@@ -117,7 +121,7 @@ export function EventScoring({
                   key={event}
                   onClick={() => handleEventClick(event)}
                   disabled={isCompleted}
-                  className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center
+                  className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4
                     ${isCompleted 
                       ? 'border-accent/50 bg-accent/10 cursor-default' 
                       : 'border-outline hover:border-accent hover:bg-accent/5'
@@ -129,22 +133,37 @@ export function EventScoring({
                     </div>
                   )}
                   
-                  <div className="mb-2">
+                  {/* Drag Handle (decorative for now) */}
+                  {onReorderEvents && (
+                    <div className="flex-shrink-0 text-on-surface-variant/50 cursor-grab">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <circle cx="6" cy="5" r="1.5" />
+                        <circle cx="6" cy="10" r="1.5" />
+                        <circle cx="6" cy="15" r="1.5" />
+                        <circle cx="14" cy="5" r="1.5" />
+                        <circle cx="14" cy="10" r="1.5" />
+                        <circle cx="14" cy="15" r="1.5" />
+                      </svg>
+                    </div>
+                  )}
+                  
+                  <div className="flex-shrink-0">
                     <Pictogram className="w-10 h-10 text-on-surface" />
                   </div>
-                  <div className="font-semibold text-on-surface">{config.label}</div>
                   
-                  {!isCompleted && (
-                    <div className="text-xs text-on-surface-variant mt-1">
-                      {scoreCount}/{totalGymnasts} scored
-                    </div>
-                  )}
-                  
-                  {isCompleted && (
-                    <div className="text-xs text-accent mt-1 font-medium">
-                      Complete ✓
-                    </div>
-                  )}
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-on-surface">{config.label}</div>
+                    {!isCompleted && (
+                      <div className="text-xs text-on-surface-variant">
+                        {scoreCount}/{totalGymnasts} scored
+                      </div>
+                    )}
+                    {isCompleted && (
+                      <div className="text-xs text-accent font-medium">
+                        Complete ✓
+                      </div>
+                    )}
+                  </div>
                 </button>
               );
             })}
