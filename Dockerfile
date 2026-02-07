@@ -3,6 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arg for commit hash
+ARG GIT_COMMIT=dev
+ENV GIT_COMMIT=${GIT_COMMIT}
+
 # Copy package files
 COPY package.json ./
 RUN npm install
