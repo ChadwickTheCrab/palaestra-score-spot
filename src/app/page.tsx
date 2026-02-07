@@ -19,6 +19,7 @@ export default function Home() {
     isLoaded,
     groups,
     createGroup,
+    updateGroup,
     deleteGroup,
     addGymnastToGroup,
     removeGymnastFromGroup,
