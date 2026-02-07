@@ -2,6 +2,7 @@
 
 import { MeetResults, GymnastResult, EVENT_CONFIG, EventType, EVENTS } from '@/types';
 import { Trophy, Medal, Share2, ChevronLeft, Camera } from 'lucide-react';
+import { BarsPictogram, BeamPictogram, FloorPictogram, VaultPictogram } from './icons/Pictograms';
 
 interface ResultsViewProps {
   results: MeetResults;
@@ -133,9 +134,14 @@ export function ResultsView({
             <div className="grid grid-cols-4 gap-2 pt-3 border-t border-outline/20">
               {EVENTS.map((event) => {
                 const score = result.eventScores[event];
+                const Pictogram = event === 'bars' ? BarsPictogram :
+                                  event === 'beam' ? BeamPictogram :
+                                  event === 'floor' ? FloorPictogram : VaultPictogram;
                 return (
                   <div key={event} className="text-center">
-                    <div className="text-lg mb-1">{EVENT_CONFIG[event].emoji}</div>
+                    <div className="mb-1 flex justify-center">
+                      <Pictogram className="w-6 h-6 text-on-surface" />
+                    </div>
                     <p className={`text-sm font-medium ${getScoreColor(score)}`}>
                       {score !== null ? score.toFixed(3) : '-'}
                     </p>
