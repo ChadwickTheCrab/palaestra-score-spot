@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -127,11 +127,19 @@ export function EventScoring({
   const [activeEvent, setActiveEvent] = useState<EventType | null>(meet.activeEvent);
   const [items, setItems] = useState<EventType[]>(eventOrder);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
+  const inputTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Sync items with prop changes
   useEffect(() => {
     setItems(eventOrder);
   }, [eventOrder]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(inputTimeouts.current).forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
 
   useEffect(() => {
     setActiveEvent(meet.activeEvent);
@@ -210,39 +218,41 @@ export function EventScoring({
     if (value === '' || value === '.') {
       setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
       onUpdateScore(activeEvent, gymnastId, null);
+      // Clear any pending timeout
+      if (inputTimeouts.current[gymnastId]) {
+        clearTimeout(inputTimeouts.current[gymnastId]);
+        delete inputTimeouts.current[gymnastId];
+      }
       return;
     }
     
     // Store raw input
     setRawInputs(prev => ({ ...prev, [gymnastId]: value }));
-  };
-
-  const handleScoreBlur = (gymnastId: string) => {
-    if (!activeEvent) return;
     
-    const rawValue = rawInputs[gymnastId];
-    if (!rawValue || rawValue === '') {
-      setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
-      return;
+    // Clear existing timeout for this gymnast
+    if (inputTimeouts.current[gymnastId]) {
+      clearTimeout(inputTimeouts.current[gymnastId]);
     }
     
-    // Try auto-format on blur
-    const formattedValue = formatScoreInput(rawValue);
-    if (formattedValue) {
-      const score = parseFloat(formattedValue);
-      if (!isNaN(score) && score >= 0 && score <= 10) {
-        onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
-        setRawInputs(prev => ({ ...prev, [gymnastId]: '' })); // Clear raw after formatting
-        return;
+    // Set new timeout to format after 800ms of no typing
+    inputTimeouts.current[gymnastId] = setTimeout(() => {
+      const formattedValue = formatScoreInput(value);
+      if (formattedValue) {
+        const score = parseFloat(formattedValue);
+        if (!isNaN(score) && score >= 0 && score <= 10) {
+          onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
+          setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
+        }
+      } else {
+        // Fallback: try direct parse
+        const score = parseFloat(value);
+        if (!isNaN(score) && score >= 0 && score <= 10) {
+          onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
+          setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
+        }
       }
-    }
-    
-    // Fallback to direct parsing
-    const score = parseFloat(rawValue);
-    if (!isNaN(score) && score >= 0 && score <= 10) {
-      onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
-      setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
-    }
+      delete inputTimeouts.current[gymnastId];
+    }, 800);
   };
 
   const getScoreValue = (gymnastId: string): string => {
@@ -393,7 +403,6 @@ export function EventScoring({
                       inputMode="numeric"
                       value={getScoreValue(gymnast.id)}
                       onChange={(e) => handleScoreChange(gymnast.id, e.target.value)}
-                      onBlur={() => handleScoreBlur(gymnast.id)}
                       placeholder="000"
                       className="w-24 py-2.5 px-3 bg-surface-variant border-2 border-outline rounded-lg
                                  text-center font-mono text-lg font-semibold text-on-surface
@@ -412,7 +421,7 @@ export function EventScoring({
           {/* Quick Entry Hint */}
           <div className="text-center">
             <p className="text-xs text-on-surface-variant/70">
-              Quick entry: 956→9.56, 95→9.50, 9→9.00
+              Quick entry: Type 956, wait, becomes 9.56
             </p>
           </div>
 
