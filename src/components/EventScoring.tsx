@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CurrentMeet, EventType, EVENTS, EVENT_CONFIG, Gymnast } from '@/types';
 import { Check, ChevronRight, Trophy, AlertCircle } from 'lucide-react';
+import { BarsPictogram, BeamPictogram, FloorPictogram, VaultPictogram } from './icons/Pictograms';
 
 interface EventScoringProps {
   meet: CurrentMeet;
@@ -106,13 +107,17 @@ export function EventScoring({
               const isCompleted = meet.eventScores[event].completed;
               const scoreCount = meet.eventScores[event].scores.length;
               const totalGymnasts = meet.gymnasts.length;
+              
+              const Pictogram = event === 'bars' ? BarsPictogram :
+                                event === 'beam' ? BeamPictogram :
+                                event === 'floor' ? FloorPictogram : VaultPictogram;
 
               return (
                 <button
                   key={event}
                   onClick={() => handleEventClick(event)}
                   disabled={isCompleted}
-                  className={`relative p-4 rounded-xl border-2 transition-all
+                  className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center
                     ${isCompleted 
                       ? 'border-accent/50 bg-accent/10 cursor-default' 
                       : 'border-outline hover:border-accent hover:bg-accent/5'
@@ -124,7 +129,9 @@ export function EventScoring({
                     </div>
                   )}
                   
-                  <div className="text-3xl mb-2">{config.emoji}</div>
+                  <div className="mb-2">
+                    <Pictogram className="w-10 h-10 text-on-surface" />
+                  </div>
                   <div className="font-semibold text-on-surface">{config.label}</div>
                   
                   {!isCompleted && (
@@ -152,7 +159,10 @@ export function EventScoring({
           <div className={`p-4 rounded-xl bg-gradient-to-r ${EVENT_CONFIG[activeEvent].bgGradient} border border-outline/30`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{EVENT_CONFIG[activeEvent].emoji}</span>
+                {activeEvent === 'bars' && <BarsPictogram className="w-10 h-10 text-on-surface" />}
+                {activeEvent === 'beam' && <BeamPictogram className="w-10 h-10 text-on-surface" />}
+                {activeEvent === 'floor' && <FloorPictogram className="w-10 h-10 text-on-surface" />}
+                {activeEvent === 'vault' && <VaultPictogram className="w-10 h-10 text-on-surface" />}
                 <div>
                   <h3 className="text-xl font-bold text-on-surface">
                     {EVENT_CONFIG[activeEvent].label}
