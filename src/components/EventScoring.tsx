@@ -201,8 +201,8 @@ export function EventScoring({
   const [activeEvent, setActiveEvent] = useState<EventType | null>(meet.activeEvent);
   const [items, setItems] = useState<EventType[]>(eventOrder);
   const [gymnastItems, setGymnastItems] = useState<string[]>([]);
-  const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
-  const inputTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
+  const [rawInputs, setRawInputs] = useState<Record<string, string>>({}); // keyed by `${event}:${gymnastId}`
+  const inputTimeouts = useRef<Record<string, NodeJS.Timeout>>({}); // keyed by `${event}:${gymnastId}`
 
   // Sync items with prop changes
   useEffect(() => {
@@ -289,23 +289,25 @@ export function EventScoring({
     }
   };
 
-  // Auto-format score input: 956 → 9.56, 95 → 9.50, 875 → 8.75
+  // Auto-format score input: 956 → 9.56, 96 → 9.60, 875 → 8.75, 10 → 10.00
   const formatScoreInput = (input: string): string | null => {
     // Remove any non-digit characters
     const digits = input.replace(/\D/g, '');
     
     if (digits === '') return null;
     
-    // For 3-4 digits, insert decimal point: 956 → 9.56, 1000 → 10.00
+    // For 3-4 digits, insert decimal point before last 2: 956 → 9.56, 1000 → 10.00
     if (digits.length >= 3 && digits.length <= 4) {
       const wholePart = digits.slice(0, -2);
       const decimalPart = digits.slice(-2);
       return `${wholePart}.${decimalPart}`;
     }
     
-    // For 2 digits, add .50: 95 → 9.50, 87 → 8.50
+    // For 2 digits, insert decimal after first: 96 → 9.60, 87 → 8.70, 10 → 10.00
     if (digits.length === 2) {
-      return `${digits}.50`;
+      const wholePart = digits.slice(0, 1);
+      const decimalPart = digits.slice(1) + '0';
+      return `${wholePart}.${decimalPart}`;
     }
     
     // For 1 digit, add .00: 9 → 9.00
@@ -319,52 +321,56 @@ export function EventScoring({
   const handleScoreChange = (gymnastId: string, value: string) => {
     if (!activeEvent) return;
     
+    const inputKey = `${activeEvent}:${gymnastId}`;
+    
     if (value === '' || value === '.') {
-      setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
+      setRawInputs(prev => ({ ...prev, [inputKey]: '' }));
       onUpdateScore(activeEvent, gymnastId, null);
       // Clear any pending timeout
-      if (inputTimeouts.current[gymnastId]) {
-        clearTimeout(inputTimeouts.current[gymnastId]);
-        delete inputTimeouts.current[gymnastId];
+      if (inputTimeouts.current[inputKey]) {
+        clearTimeout(inputTimeouts.current[inputKey]);
+        delete inputTimeouts.current[inputKey];
       }
       return;
     }
     
     // Store raw input
-    setRawInputs(prev => ({ ...prev, [gymnastId]: value }));
+    setRawInputs(prev => ({ ...prev, [inputKey]: value }));
     
-    // Clear existing timeout for this gymnast
-    if (inputTimeouts.current[gymnastId]) {
-      clearTimeout(inputTimeouts.current[gymnastId]);
+    // Clear existing timeout for this gymnast+event
+    if (inputTimeouts.current[inputKey]) {
+      clearTimeout(inputTimeouts.current[inputKey]);
     }
     
     // Set new timeout to format after 800ms of no typing
-    inputTimeouts.current[gymnastId] = setTimeout(() => {
+    inputTimeouts.current[inputKey] = setTimeout(() => {
       const formattedValue = formatScoreInput(value);
       if (formattedValue) {
         const score = parseFloat(formattedValue);
         if (!isNaN(score) && score >= 0 && score <= 10) {
           onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
-          setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
+          setRawInputs(prev => ({ ...prev, [inputKey]: '' }));
         }
       } else {
         // Fallback: try direct parse
         const score = parseFloat(value);
         if (!isNaN(score) && score >= 0 && score <= 10) {
           onUpdateScore(activeEvent, gymnastId, Math.round(score * 1000) / 1000);
-          setRawInputs(prev => ({ ...prev, [gymnastId]: '' }));
+          setRawInputs(prev => ({ ...prev, [inputKey]: '' }));
         }
       }
-      delete inputTimeouts.current[gymnastId];
+      delete inputTimeouts.current[inputKey];
     }, 800);
   };
 
   const getScoreValue = (gymnastId: string): string => {
-    // Return raw input while typing, otherwise formatted score
-    if (rawInputs[gymnastId] !== undefined && rawInputs[gymnastId] !== '') {
-      return rawInputs[gymnastId];
-    }
     if (!activeEvent) return '';
+    
+    const inputKey = `${activeEvent}:${gymnastId}`;
+    // Return raw input while typing, otherwise formatted score
+    if (rawInputs[inputKey] !== undefined && rawInputs[inputKey] !== '') {
+      return rawInputs[inputKey];
+    }
     const score = meet.eventScores[activeEvent].scores.find(
       s => s.gymnastId === gymnastId
     )?.score;
