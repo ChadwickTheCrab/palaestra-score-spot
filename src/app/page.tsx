@@ -185,18 +185,31 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-outline/20 py-3">
-        <div className="max-w-lg mx-auto px-4 text-center">
+        <div className="max-w-lg mx-auto px-4 text-center space-y-1">
           <p className="text-xs text-on-surface-variant">
             🦁 Palaestra Lionesses • {new Date().getFullYear()}
           </p>
-          {groups.length > 0 && (
+          <div className="flex items-center justify-center gap-3">
+            {groups.length > 0 && (
+              <button
+                onClick={clearAllData}
+                className="text-xs text-error/70 hover:text-error"
+              >
+                Clear All Data
+              </button>
+            )}
             <button
-              onClick={clearAllData}
-              className="text-xs text-error/70 hover:text-error mt-1"
+              onClick={() => {
+                if (confirm('Hard reset: Clear all app data and reload?')) {
+                  localStorage.removeItem('palaestra-app-data-v2');
+                  window.location.reload();
+                }
+              }}
+              className="text-xs text-warning/70 hover:text-warning"
             >
-              Clear All Data
+              Hard Reset
             </button>
-          )}
+          </div>
         </div>
       </footer>
     </main>
