@@ -113,6 +113,12 @@ export function GroupManager({
                       newNames[index] = e.target.value;
                       setGymnastNames(newNames);
                     }}
+                    onFocus={() => {
+                      // Auto-add new field when focusing the last empty one
+                      if (index === gymnastNames.length - 1 && name.trim() === '') {
+                        setGymnastNames([...gymnastNames, '']);
+                      }
+                    }}
                     placeholder={`Gymnast ${index + 1}`}
                     className="input-field"
                   />
