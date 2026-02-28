@@ -289,30 +289,45 @@ export function EventScoring({
     }
   };
 
-  // Auto-format score input: 956 → 9.56, 96 → 9.60, 875 → 8.75, 10 → 10.00
+  // Auto-format score input while still allowing manual decimals like 9.350
   const formatScoreInput = (input: string): string | null => {
-    // Remove any non-digit characters
-    const digits = input.replace(/\D/g, '');
-    
+    const trimmed = input.trim();
+    if (trimmed === '') return null;
+
+    const commitValue = (value: number): string | null => {
+      if (isNaN(value)) return null;
+      const clamped = Math.max(0, Math.min(value, 10));
+      return clamped.toFixed(3);
+    };
+
+    // If the user typed a decimal value (e.g., 9.350) respect it
+    const decimalPattern = /^(?:\d{0,2})(?:\.\d{0,3})?$/;
+    if (decimalPattern.test(trimmed)) {
+      return commitValue(parseFloat(trimmed));
+    }
+
+    // Otherwise fall back to smart digit parsing
+    const digits = trimmed.replace(/\D/g, '');
     if (digits === '') return null;
-    
-    // For 3-4 digits, insert decimal point before last 2: 956 → 9.56, 1000 → 10.00
+
+    if (digits === '10') {
+      return commitValue(10);
+    }
+
     if (digits.length >= 3 && digits.length <= 4) {
       const wholePart = digits.slice(0, -2);
       const decimalPart = digits.slice(-2);
-      return `${wholePart}.${decimalPart}`;
+      return commitValue(parseFloat(`${wholePart}.${decimalPart}`));
     }
     
-    // For 2 digits, insert decimal after first: 96 → 9.60, 87 → 8.70, 10 → 10.00
     if (digits.length === 2) {
       const wholePart = digits.slice(0, 1);
-      const decimalPart = digits.slice(1) + '0';
-      return `${wholePart}.${decimalPart}`;
+      const decimalPart = digits.slice(1);
+      return commitValue(parseFloat(`${wholePart}.${decimalPart}0`));
     }
     
-    // For 1 digit, add .00: 9 → 9.00
     if (digits.length === 1) {
-      return `${digits}.00`;
+      return commitValue(parseFloat(`${digits}.00`));
     }
     
     return null;

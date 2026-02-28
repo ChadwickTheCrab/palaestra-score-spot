@@ -288,16 +288,41 @@ export function useAppData() {
     });
 
     // Sort and assign ranks
+    const compareEventOrder = (a: GymnastResult, b: GymnastResult): number => {
+      for (const event of EVENTS) {
+        const aScore = a.eventScores[event];
+        const bScore = b.eventScores[event];
+
+        const normalizedAScore = aScore === null ? -Infinity : aScore;
+        const normalizedBScore = bScore === null ? -Infinity : bScore;
+        const diff = normalizedBScore - normalizedAScore;
+
+        if (Math.abs(diff) > 0.0005) {
+          return diff;
+        }
+      }
+
+      return a.gymnast.name.localeCompare(b.gymnast.name);
+    };
+
     const sortedResults = [...gymnastResults]
-      .sort((a, b) => b.totalScore - a.totalScore)
+      .sort((a, b) => {
+        const totalDiff = b.totalScore - a.totalScore;
+        if (Math.abs(totalDiff) > 0.0005) {
+          return totalDiff;
+        }
+
+        return compareEventOrder(a, b);
+      })
       .map((r, index) => ({ ...r, rank: index + 1 }));
 
+    const topThree = sortedResults.slice(0, 3);
     const completedEvents = EVENTS.filter(event => meet.eventScores[event].completed);
 
     return {
       gymnasts: sortedResults,
-      teamTotal: calculateTeamTotal(sortedResults),
-      topThree: sortedResults.slice(0, 3),
+      teamTotal: calculateTeamTotal(topThree),
+      topThree,
       completedEvents,
     };
   }, []);

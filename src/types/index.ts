@@ -114,8 +114,7 @@ export function calculateGymnastTotal(eventScores: Record<EventType, number | nu
 }
 
 export function calculateTeamTotal(results: GymnastResult[]): number {
-  const sorted = [...results].sort((a, b) => b.totalScore - a.totalScore);
-  const topThree = sorted.slice(0, 3);
+  const topThree = results.slice(0, 3);
   return topThree.reduce((sum, r) => sum + r.totalScore, 0);
 }
 
