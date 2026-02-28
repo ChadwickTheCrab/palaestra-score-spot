@@ -321,7 +321,7 @@ export function useAppData() {
 
     return {
       gymnasts: sortedResults,
-      teamTotal: calculateTeamTotal(topThree),
+      teamTotal: calculateTeamTotal(sortedResults),
       topThree,
       completedEvents,
     };

@@ -114,8 +114,16 @@ export function calculateGymnastTotal(eventScores: Record<EventType, number | nu
 }
 
 export function calculateTeamTotal(results: GymnastResult[]): number {
-  const topThree = results.slice(0, 3);
-  return topThree.reduce((sum, r) => sum + r.totalScore, 0);
+  return EVENTS.reduce((teamSum, event) => {
+    const topEventScores = results
+      .map(result => result.eventScores[event])
+      .filter((score): score is number => score !== null)
+      .sort((a, b) => b - a)
+      .slice(0, 3);
+
+    const eventTotal = topEventScores.reduce((sum, score) => sum + score, 0);
+    return teamSum + eventTotal;
+  }, 0);
 }
 
 export function getCompletedEvents(eventScores: Record<EventType, EventScores>): EventType[] {
