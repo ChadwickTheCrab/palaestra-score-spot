@@ -300,10 +300,13 @@ export function EventScoring({
       return clamped.toFixed(3);
     };
 
-    // If the user typed a decimal value (e.g., 9.350) respect it
-    const decimalPattern = /^(?:\d{0,2})(?:\.\d{0,3})?$/;
-    if (decimalPattern.test(trimmed)) {
-      return commitValue(parseFloat(trimmed));
+    // If the user explicitly entered a decimal (e.g., 9.350) respect it
+    if (trimmed.includes('.')) {
+      const decimalPattern = /^(?:\d{0,2})(?:\.\d{0,3})?$/;
+      if (decimalPattern.test(trimmed)) {
+        return commitValue(parseFloat(trimmed));
+      }
+      return null;
     }
 
     // Otherwise fall back to smart digit parsing
@@ -314,23 +317,16 @@ export function EventScoring({
       return commitValue(10);
     }
 
-    if (digits.length >= 3 && digits.length <= 4) {
-      const wholePart = digits.slice(0, -2);
-      const decimalPart = digits.slice(-2);
-      return commitValue(parseFloat(`${wholePart}.${decimalPart}`));
+    // Normalize to at most 4 digits so we only keep thousandths precision
+    const normalized = digits.slice(0, 4);
+
+    if (normalized.length === 1) {
+      return commitValue(parseFloat(`${normalized}.000`));
     }
-    
-    if (digits.length === 2) {
-      const wholePart = digits.slice(0, 1);
-      const decimalPart = digits.slice(1);
-      return commitValue(parseFloat(`${wholePart}.${decimalPart}0`));
-    }
-    
-    if (digits.length === 1) {
-      return commitValue(parseFloat(`${digits}.00`));
-    }
-    
-    return null;
+
+    const scale = Math.pow(10, normalized.length - 1);
+    const value = parseInt(normalized, 10) / scale;
+    return commitValue(value);
   };
 
   const handleScoreChange = (gymnastId: string, value: string) => {
